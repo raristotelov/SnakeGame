@@ -3,6 +3,7 @@ package engine;
 import field.FieldImpl;
 import snake.SnakeImpl;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -60,6 +61,8 @@ public class EngineImpl implements Engine {
                     headPositionR = this.snake.getHeadR() - 1;
                     headPositionC = this.snake.getHeadC();
                     this.field.getField()[this.snake.getHeadR()][this.snake.getHeadC()] = '@';
+                    int oldSnakeHeadR = this.snake.getHeadR();
+                    int oldSnakeHeadC = this.snake.getHeadC();
 
 
                     if (headPositionR == 0) {
@@ -72,7 +75,6 @@ public class EngineImpl implements Engine {
 
                     this.snake.setHeadR(headPositionR);
 
-                    this.snake.getBodyCoordinates().get(0)[0] =  headPositionR;
 
                     if (this.field.getField()[headPositionR][headPositionC] == '$') {
                         isCollectible = true;
@@ -80,12 +82,14 @@ public class EngineImpl implements Engine {
 
                     this.field.getField()[headPositionR][headPositionC] = '^';
 
-                    if (!isCollectible) {
-                        setTail();
-                    } else {
+                    this.snake.getBodyCoordinates().get(0)[0]++;
+                    moveSnakeBody(oldSnakeHeadR, oldSnakeHeadC, isCollectible);
+
+                    if (isCollectible) {
                         this.collectibleOnField = false;
                         this.snake.setSize(this.snake.getSize() + 1);
                     }
+
                     this.lastCommand = command.charAt(0);
                 }
                 break;
@@ -98,6 +102,8 @@ public class EngineImpl implements Engine {
                     headPositionR = this.snake.getHeadR() + 1;
                     headPositionC = this.snake.getHeadC();
                     this.field.getField()[this.snake.getHeadR()][this.snake.getHeadC()] = '@';
+                    int oldSnakeHeadR = this.snake.getHeadR();
+                    int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionR == this.field.getDimensionX() - 1) {
                         throw new IllegalArgumentException("Game Over");
@@ -115,12 +121,14 @@ public class EngineImpl implements Engine {
 
                     this.field.getField()[headPositionR][headPositionC] = '+';
 
-                    if (!isCollectible) {
-                        setTail();
-                    } else {
+                    this.snake.getBodyCoordinates().get(0)[0]--;
+                    moveSnakeBody(oldSnakeHeadR, oldSnakeHeadC, isCollectible);
+
+                    if (isCollectible) {
                         this.collectibleOnField = false;
                         this.snake.setSize(this.snake.getSize() + 1);
                     }
+
                     this.lastCommand = command.charAt(0);
                 }
                 break;
@@ -133,6 +141,8 @@ public class EngineImpl implements Engine {
                     headPositionR = this.snake.getHeadR();
                     headPositionC = this.snake.getHeadC() - 1;
                     this.field.getField()[this.snake.getHeadR()][this.snake.getHeadC()] = '@';
+                    int oldSnakeHeadR = this.snake.getHeadR();
+                    int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionC == 0) {
                         throw new IllegalArgumentException("Game Over");
@@ -150,12 +160,14 @@ public class EngineImpl implements Engine {
 
                     this.field.getField()[headPositionR][headPositionC] = '<';
 
-                    if (!isCollectible) {
-                        setTail();
-                    } else {
+                    this.snake.getBodyCoordinates().get(0)[1]--;
+                    moveSnakeBody(oldSnakeHeadR, oldSnakeHeadC, isCollectible);
+
+                    if (isCollectible) {
                         this.collectibleOnField = false;
                         this.snake.setSize(this.snake.getSize() + 1);
                     }
+
                     this.lastCommand = command.charAt(0);
                 }
                 break;
@@ -168,6 +180,8 @@ public class EngineImpl implements Engine {
                     headPositionR = this.snake.getHeadR();
                     headPositionC = this.snake.getHeadC() + 1;
                     this.field.getField()[this.snake.getHeadR()][this.snake.getHeadC()] = '@';
+                    int oldSnakeHeadR = this.snake.getHeadR();
+                    int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionC == this.field.getDimensionY() - 1) {
                         throw new IllegalArgumentException("Game Over");
@@ -185,12 +199,14 @@ public class EngineImpl implements Engine {
 
                     this.field.getField()[headPositionR][headPositionC] = '>';
 
-                    if (!isCollectible) {
-                        setTail();
-                    } else {
+                    this.snake.getBodyCoordinates().get(0)[1]++;
+                    moveSnakeBody(oldSnakeHeadR, oldSnakeHeadC, isCollectible);
+
+                    if (isCollectible) {
                         this.collectibleOnField = false;
                         this.snake.setSize(this.snake.getSize() + 1);
                     }
+
                     this.lastCommand = command.charAt(0);
                 }
                 break;
@@ -198,40 +214,50 @@ public class EngineImpl implements Engine {
         }
     }
 
-    private void setTail() {
-        int tailPositionR = this.snake.getTailR();
-        int tailPositionC = this.snake.getTailC();
-        int snakeSize = this.snake.getSize();
+    private void moveSnakeBody(int oldSnakeHeadR, int oldSnakeHeadC, boolean isCollectible) {
+        List<int[]> bodyCoordinates = this.snake.getBodyCoordinates();
+        int previousCoordinateR = oldSnakeHeadR;
+        int previousCoordinateC = oldSnakeHeadC;
 
-        if (this.field.getField()[tailPositionR][tailPositionC - 1] == '@') {
-            int newTailPositionC = tailPositionC - 1;
+        if (!isCollectible) {
+            for (int i = 1; i < bodyCoordinates.size(); i++) {
+                int currentCoordinatesR = bodyCoordinates.get(i)[0];
+                int currentCoordinatesC = bodyCoordinates.get(i)[1];
 
-            this.snake.setTailC(newTailPositionC);
-            this.field.getField()[tailPositionR][tailPositionC] = '.';
+                bodyCoordinates.get(i)[0] = previousCoordinateR;
+                bodyCoordinates.get(i)[1] = previousCoordinateC;
 
-        } else if (this.field.getField()[tailPositionR][tailPositionC + 1] == '@') {
-            int newTailPositionC = tailPositionC + 1;
+                previousCoordinateR = currentCoordinatesR;
+                previousCoordinateC = currentCoordinatesC;
 
-            this.snake.setTailC(newTailPositionC);
-            this.field.getField()[tailPositionR][tailPositionC] = '.';
+                if (i == bodyCoordinates.size() - 1) {
+                    this.snake.setTailR(bodyCoordinates.get(i)[0]);
+                    this.snake.setTailC(bodyCoordinates.get(i)[1]);
+                }
+            }
 
-        } else if (this.field.getField()[tailPositionR + 1][tailPositionC] == '@') {
-            int newTailPositionR = tailPositionR + 1;
+            this.field.getField()[previousCoordinateR][previousCoordinateC] = '.';
+        } else {
+            for (int i = 1; i < bodyCoordinates.size(); i++) {
+                int currentCoordinatesR = bodyCoordinates.get(i)[0];
+                int currentCoordinatesC = bodyCoordinates.get(i)[1];
 
-            this.snake.setTailR(newTailPositionR);
-            this.field.getField()[tailPositionR][tailPositionC] = '.';
+                bodyCoordinates.get(i)[0] = previousCoordinateR;
+                bodyCoordinates.get(i)[1] = previousCoordinateC;
 
-        } else if (this.field.getField()[tailPositionR - 1][tailPositionC] == '@') {
-            int newTailPositionR = tailPositionR - 1;
+                previousCoordinateR = currentCoordinatesR;
+                previousCoordinateC = currentCoordinatesC;
+            }
 
-            this.snake.setTailR(newTailPositionR);
-            this.field.getField()[tailPositionR][tailPositionC] = '.';
+            this.snake.addBody(previousCoordinateR, previousCoordinateC);
+            this.snake.setTailR(previousCoordinateR);
+            this.snake.setTailC(previousCoordinateC);
         }
     }
 
     private String getCommand() {
         String input = this.scanner.nextLine();
-        if(input.trim().isEmpty()){
+        if (input.trim().isEmpty()) {
             input = getCommand();
         }
         String command = "";
