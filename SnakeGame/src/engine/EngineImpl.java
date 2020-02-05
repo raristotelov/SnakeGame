@@ -13,28 +13,39 @@ public class EngineImpl implements Engine {
     private SnakeImpl snake;
     private boolean collectibleOnField;
     private char lastCommand;
+    private List<String> inputCommand;
+    private List<Boolean> gameOver;
 
 
-    public EngineImpl() {
+    public EngineImpl(List<String> inputCommand, List<Boolean> gameOver) {
         this.field = new FieldImpl(9, 30);
         this.snake = new SnakeImpl();
         this.scanner = new Scanner(System.in);
+        this.inputCommand = inputCommand;
+        this.gameOver = gameOver;
     }
 
     @Override
     public void run() {
         spawnSnake();
-        String command;
+        //String command;
         spawnCollectible();
         this.collectibleOnField = true;
         this.lastCommand = 'a';
 
         while (true) {
+            //String command = getCommand();
             printField();
             System.out.println();
-            command = getCommand();
+
             try {
-                moveSnake(command);
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                moveSnake(this.inputCommand.get(0));
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
                 break;
@@ -44,6 +55,7 @@ public class EngineImpl implements Engine {
                 this.spawnCollectible();
                 this.collectibleOnField = true;
             }
+
         }
     }
 
@@ -66,10 +78,12 @@ public class EngineImpl implements Engine {
 
 
                     if (headPositionR == 0) {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
                     if (this.field.getField()[headPositionR][headPositionC] == '@') {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
@@ -106,10 +120,12 @@ public class EngineImpl implements Engine {
                     int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionR == this.field.getDimensionX() - 1) {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
                     if (this.field.getField()[headPositionR][headPositionC] == '@') {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
@@ -145,6 +161,12 @@ public class EngineImpl implements Engine {
                     int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionC == 0) {
+                        this.gameOver.set(0, true);
+                        throw new IllegalArgumentException("Game Over");
+                    }
+
+                    if (this.field.getField()[headPositionR][headPositionC] == '@') {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
@@ -152,10 +174,6 @@ public class EngineImpl implements Engine {
 
                     if (this.field.getField()[headPositionR][headPositionC] == '$') {
                         isCollectible = true;
-                    }
-
-                    if (this.field.getField()[headPositionR][headPositionC] == '@') {
-                        throw new IllegalArgumentException("Game Over");
                     }
 
                     this.field.getField()[headPositionR][headPositionC] = '<';
@@ -184,10 +202,12 @@ public class EngineImpl implements Engine {
                     int oldSnakeHeadC = this.snake.getHeadC();
 
                     if (headPositionC == this.field.getDimensionY() - 1) {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
                     if (this.field.getField()[headPositionR][headPositionC] == '@') {
+                        this.gameOver.set(0, true);
                         throw new IllegalArgumentException("Game Over");
                     }
 
