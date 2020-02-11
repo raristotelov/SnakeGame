@@ -2,41 +2,63 @@ package engine;
 
 import field.FieldImpl;
 import snake.SnakeImpl;
+import thread.GetInputThread;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
 public class EngineImpl implements Engine {
+    private static final int DIMENSION_X = 9;
+    private static final int DIMENSION_Y = 16;
     private Scanner scanner;
     private FieldImpl field;
     private SnakeImpl snake;
     private boolean collectibleOnField;
     private char lastCommand;
+    private boolean wonGame;
     private List<String> inputCommand;
     private List<Boolean> gameOver;
+    private List<Boolean> gameWon;
 
 
-    public EngineImpl(List<String> inputCommand, List<Boolean> gameOver) {
-        this.field = new FieldImpl(9, 30);
+    public EngineImpl() {
+        this.field = new FieldImpl(DIMENSION_X, DIMENSION_Y);
         this.snake = new SnakeImpl();
+        this.wonGame = false;
         this.scanner = new Scanner(System.in);
-        this.inputCommand = inputCommand;
-        this.gameOver = gameOver;
+
+        this.inputCommand = new ArrayList<>();
+        this.gameOver = new ArrayList<>();
+        this.gameWon = new ArrayList<>();
+
+        this.inputCommand.add("a");
+        this.gameOver.add(false);
+        this.gameWon.add(false);
     }
 
     @Override
     public void run() {
+        GetInputThread getInputThread = new GetInputThread(inputCommand, gameOver, gameWon);
+        getInputThread.start();
+
         spawnSnake();
-        //String command;
         spawnCollectible();
+
         this.collectibleOnField = true;
         this.lastCommand = 'a';
 
         while (true) {
-            //String command = getCommand();
             printField();
             System.out.println();
+
+            this.wonGame = this.field.checkIfWon();
+            if(this.wonGame){
+                System.out.println("You win");
+                this.gameWon.set(0, true);
+                break;
+            }
 
             try {
                 Thread.sleep(500);
@@ -135,7 +157,7 @@ public class EngineImpl implements Engine {
                         isCollectible = true;
                     }
 
-                    this.field.getField()[headPositionR][headPositionC] = '+';
+                    this.field.getField()[headPositionR][headPositionC] = 'v';
 
                     this.snake.getBodyCoordinates().get(0)[0]--;
                     moveSnakeBody(oldSnakeHeadR, oldSnakeHeadC, isCollectible);
@@ -286,18 +308,18 @@ public class EngineImpl implements Engine {
     }
 
     private void spawnSnake() {
-        this.snake.setHeadR(4);
-        this.snake.setHeadC(13);
-        this.snake.setTailR(4);
-        this.snake.setTailC(15);
+        this.snake.setHeadR(3);
+        this.snake.setHeadC(6);
+        this.snake.setTailR(3);
+        this.snake.setTailC(8);
 
-        this.snake.addBody(4, 13);
-        this.snake.addBody(4, 14);
-        this.snake.addBody(4, 15);
+        this.snake.addBody(3, 6);
+        this.snake.addBody(3, 7);
+        this.snake.addBody(3, 8);
 
-        this.field.getField()[4][13] = '<';
-        this.field.getField()[4][14] = '@';
-        this.field.getField()[4][15] = '@';
+        this.field.getField()[3][6] = '<';
+        this.field.getField()[3][7] = '@';
+        this.field.getField()[3][8] = '@';
     }
 
     private void spawnCollectible() {
@@ -305,12 +327,12 @@ public class EngineImpl implements Engine {
         Random randomC = new Random();
         int collectibleR = 0;
         while (collectibleR == 0) {
-            collectibleR = randomR.nextInt(7);
+            collectibleR = randomR.nextInt(DIMENSION_X - 2);
         }
 
         int collectibleC = 0;
         while (collectibleC == 0) {
-            collectibleC = randomC.nextInt(28);
+            collectibleC = randomC.nextInt(DIMENSION_Y - 2);
         }
 
         if (field.getField()[collectibleR][collectibleC] == '.') {
@@ -324,6 +346,7 @@ public class EngineImpl implements Engine {
         for (int r = 0; r < this.field.getDimensionX(); r++) {
             for (int c = 0; c < this.field.getDimensionY(); c++) {
                 System.out.print(this.field.getField()[r][c]);
+                System.out.print(' ');
             }
             System.out.println();
         }

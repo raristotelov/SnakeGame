@@ -6,4 +6,6 @@ public interface Field {
     int getDimensionX();
 
     int getDimensionY();
+
+    boolean checkIfWon();
 }

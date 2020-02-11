@@ -51,5 +51,20 @@ public class FieldImpl implements Field {
         return this.dimensionY;
     }
 
+    @Override
+    public boolean checkIfWon() {
+        boolean wonGame = true;
+
+        for (int r = 0; r < this.field.length; r++) {
+            for (int c = 0; c < this.field[r].length; c++) {
+                if(this.field[r][c] == '.'){
+                    wonGame = false;
+                }
+            }
+        }
+
+        return wonGame;
+    }
+
 
 }
